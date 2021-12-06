@@ -4,6 +4,7 @@ import classnames from "classnames";
 import Header from "./Header";
 import Chart1 from "../Charts/Chart1";
 import AdminNvavbar from "./AdminNavbar";
+import Select from "react-select";
 import {
   PieChart,
   Pie,
@@ -31,15 +32,54 @@ import {
   Col,
 } from "reactstrap";
 
+import { db } from "../firebase";
+import { collection, getDocs } from "firebase/firestore";
+
+let objDocentes = {};
+let opcsSelect = [];
+let arrDocentes = [];
+let arrFiltrado = [];
+let idSelect = []; //Lista de docentes seleccionados
+
+const selectChange = (e) => {
+  let seleccionados = e
+  idSelect = []
+  console.log(seleccionados)
+  seleccionados.forEach(key => {
+    idSelect.push(key['value'])
+  });
+  console.log(idSelect)
+}
+
+const getDatosDocentes = async () => {
+  const datos = await getDocs(collection(db, "docentes"));
+  datos.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    objDocentes[doc.id] = doc.data();
+    arrDocentes.push({
+      name: objDocentes[doc.id]["nombre"],
+      horas: objDocentes[doc.id]["totalHoras"],
+    });
+    opcsSelect.push({
+      value: objDocentes[doc.id]["nombre"],
+      label: objDocentes[doc.id]["nombre"],
+    });
+  });
+};
+getDatosDocentes();
+
 const Dashboard = () => {
-  const data = [
-    { name: "Profe 1", horas: 20 },
-    { name: "Profe 2", horas: 15 },
-    { name: "Profe 3", horas: 10 },
-    { name: "Profe 4", horas: 50 },
-    { name: "Profe 5", horas: 10 },
-    { name: "Profe 6", horas: 13 },
-  ];
+  const [docentes, setdocentes] = useState(arrDocentes);
+
+  const comparacion = () => {
+    arrFiltrado = arrDocentes.filter((docente) =>
+      idSelect.includes(docente.name)
+    );
+    console.log(arrFiltrado, arrDocentes);
+    setdocentes([...arrFiltrado]);
+    console.log(docentes);
+  };
+
   const data01 = [
     { name: "Profe 1", tareas: 4 },
     { name: "Profe 2", tareas: 3 },
@@ -54,6 +94,34 @@ const Dashboard = () => {
 
       <Container className="mt--7" fluid>
         <Row>
+          <Col className="mb-5" xl="12">
+            <Card className="shadow">
+              <CardHeader className="bg-transparent">
+                <Row className="align-items-center">
+                  <div className="col">
+                    <h6 className="text-uppercase text-muted ls-1 mb-1">
+                      Seleecionar Docentes
+                    </h6>
+                  </div>
+                </Row>
+              </CardHeader>
+              <CardBody>
+                <Select
+                  options={opcsSelect}
+                  isMulti
+                  onChange={selectChange}
+                />
+                <div className="col">
+                  <button
+                    className="d-none text-default d-md-block"
+                    onClick={comparacion}
+                  >
+                    Comparar
+                  </button>
+                </div>
+              </CardBody>
+            </Card>
+          </Col>
           <Col className="mb-5 mb-xl-0" xl="8">
             <Card className="bg-white shadow">
               <CardHeader className="bg-transparent">
@@ -82,13 +150,13 @@ const Dashboard = () => {
                 {/* Chart */}
                 <div className="chart align-items-center">
                   <BarChart
-                    width={900}
+                    width={600}
                     height={350}
-                    data={data}
+                    data={docentes}
                     margin={{
                       top: 5,
-                      right: 30,
-                      left: 80,
+                      right: 0,
+                      left: 0,
                       bottom: 5,
                     }}
                     barSize={20}
