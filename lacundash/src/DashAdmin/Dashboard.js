@@ -58,7 +58,7 @@ const getDatosDocentes = async () => {
     objDocentes[doc.id] = doc.data();
     arrDocentes.push({
       name: objDocentes[doc.id]["nombre"],
-      horas: objDocentes[doc.id]["totalHoras"],
+      horas: objDocentes[doc.id]["totalHoras"]
     });
     opcsSelect.push({
       value: objDocentes[doc.id]["nombre"],
